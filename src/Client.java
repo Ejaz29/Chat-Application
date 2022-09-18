@@ -1,25 +1,22 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.io.*;
 import java.net.Socket;
 import java.util.Scanner;
 // A client has a socket to connect to the server and a reader and writer to receive and send messages respectively.
 class Client extends JFrame {
-    public JPanel jPanel;
-    public JTextField jTextField;
-    public JButton jButton;
-    public JTextArea jTextArea;
-    public JScrollPane jScrollPane;
-    public Socket socket;
-    public BufferedReader bufferedReader;
-    public BufferedWriter bufferedWriter;
-    public String username;
+    private JPanel jPanel;
+    private JTextField jTextField;
+    private JButton jButton;
+    private JTextArea jTextArea;
+    private JScrollPane jScrollPane;
+    private Socket socket;
+    private BufferedReader bufferedReader;
+    private BufferedWriter bufferedWriter;
+    private String username;
     static Scanner sc = new Scanner(System.in);
-    public Client(Socket socket,String username){
+    Client(Socket socket,String username){
         super(username);
         this.username=username;
         this.socket=socket;
@@ -33,7 +30,7 @@ class Client extends JFrame {
         }
     }
 
-    public void GUI(){
+    private void GUI(){
         setSize(500,400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
@@ -49,14 +46,10 @@ class Client extends JFrame {
         jTextArea.setEditable(false);
         jScrollPane = new JScrollPane(jTextArea,JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         jScrollPane.setBounds(37,20,400,270);
+        jScrollPane.getVerticalScrollBar().addAdjustmentListener(e -> e.getAdjustable().setValue(e.getAdjustable().getMaximum()));
         jPanel.add(jButton);
         jPanel.add(jScrollPane);
-        jButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                sendMessage();
-            }
-        });
+        jButton.addActionListener(e -> sendMessage());
         jTextField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -69,7 +62,7 @@ class Client extends JFrame {
         jPanel.setLayout(null);
     }
     // Sending a message isn't blocking and can be done without spawning a thread, unlike waiting for a message.
-    public void usernameSend(){
+    private void usernameSend(){
         try{
             bufferedWriter.write(username);
             bufferedWriter.newLine();
@@ -80,24 +73,21 @@ class Client extends JFrame {
         }
     }
     // Listening for a message is blocking so need a separate thread for that.
-    public void listenMesssage(){
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while(socket.isConnected()){
-                    try {
-                        String msg=bufferedReader.readLine();
-                        jTextArea.append(msg);
-                        jTextArea.append("\n");
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+    private void listenMessage(){
+        new Thread(() -> {
+            while(socket.isConnected()){
+                try {
+                    String msg=bufferedReader.readLine();
+                    jTextArea.append(msg);
+                    jTextArea.append("\n");
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         }).start();
     }
 
-    public void sendMessage(){
+    private void sendMessage(){
         String msgtosend=jTextField.getText();
         if(msgtosend.equals("")){
             return;
@@ -113,7 +103,7 @@ class Client extends JFrame {
         jTextField.setText("");
     }
 
-    public void closeEveryThing(Socket socket,BufferedReader bufferedReader,BufferedWriter bufferedWriter){
+    private void closeEveryThing(Socket socket,BufferedReader bufferedReader,BufferedWriter bufferedWriter){
         try{
             if(bufferedReader!=null){
                 bufferedReader.close();
@@ -133,20 +123,17 @@ class Client extends JFrame {
     public static void main(String[] args) {
         System.out.println("Enter the name for grp chat: ");
         String name=sc.nextLine();
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Socket socket=new Socket("localhost",9999);
-                    Client frame=new Client(socket,name);
-                    frame.setVisible(true);
-                    frame.listenMesssage();
-                    frame.usernameSend();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
+        SwingUtilities.invokeLater(() -> {
+            try {
+                Socket socket=new Socket("localhost",9999);
+                Client frame=new Client(socket,name);
+                frame.setVisible(true);
+                frame.listenMessage();
+                frame.usernameSend();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
+
         });
     }
 }

@@ -10,7 +10,7 @@ class ClientHandler implements Runnable{
     public static ArrayList<ClientHandler> clientHandlers=new ArrayList<>();
     private BufferedReader bufferedReader;
     private BufferedWriter bufferedWriter;
-    public String username;
+    private String username;
     ClientHandler(Socket socket){
         try {
             this.socket = socket;
@@ -48,7 +48,7 @@ class ClientHandler implements Runnable{
     // Basically each client handler is a connection to a client. So for any message that
     // is received, loop through each connection and send it down it.
 
-    public void broadCast(String messageToSend) {
+    private void broadCast(String messageToSend) {
         try {
             for (ClientHandler clientHandler : clientHandlers) {
                 clientHandler.bufferedWriter.write(messageToSend);
@@ -60,7 +60,7 @@ class ClientHandler implements Runnable{
             closeEveryThing(socket,bufferedReader,bufferedWriter);
         }
     }
-    public void closeEveryThing(Socket socket,BufferedReader bufferedReader,BufferedWriter bufferedWriter){
+    private void closeEveryThing(Socket socket,BufferedReader bufferedReader,BufferedWriter bufferedWriter){
         removeClientHandler();
         try{
             if(bufferedReader!=null){
@@ -77,8 +77,9 @@ class ClientHandler implements Runnable{
             e.printStackTrace();
         }
     }
-    public void removeClientHandler(){
+    private void removeClientHandler(){
         clientHandlers.remove(this);
         broadCast("Server: "+ username+" has left the chat");
+        System.out.println("A user has left the chat");
     }
 }

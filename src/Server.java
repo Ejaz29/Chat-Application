@@ -10,7 +10,7 @@ class Server{
         this.serverSocket=serverSocket;
     }
 
-    public void startServer(){
+    private void startServer(){
         while(!serverSocket.isClosed()){
             try {
                 socket=serverSocket.accept();
@@ -21,10 +21,11 @@ class Server{
 
             } catch (IOException e) {
                 e.printStackTrace();
+                closeServer();
             }
         }
     }
-    public void closeServer(){
+    private void closeServer(){
         if(serverSocket!=null){
             try {
                 serverSocket.close();
