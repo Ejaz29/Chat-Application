@@ -11,6 +11,7 @@ class ClientHandler implements Runnable{
     private BufferedReader bufferedReader;
     private BufferedWriter bufferedWriter;
     private String username;
+    private final String key ="%$&()*^$#&()VJJFKHT^&*T.GjhjfgjgJHG&^%";
     ClientHandler(Socket socket){
         try {
             this.socket = socket;
@@ -20,7 +21,7 @@ class ClientHandler implements Runnable{
             this.username=bufferedReader.readLine();
             // Add the new client handler to the array,so they can receive messages from others.
             clientHandlers.add(this);
-            broadCast("Server: "+ username+" has joined the chat");
+            broadCast(AES.encrypt("Server: "+ username+" has joined the chat",key));
         }
         catch (Exception e){
             closeEveryThing(socket,bufferedReader,bufferedWriter);
@@ -79,7 +80,7 @@ class ClientHandler implements Runnable{
     }
     private void removeClientHandler(){
         clientHandlers.remove(this);
-        broadCast("Server: "+ username+" has left the chat");
+        broadCast(AES.encrypt("Server: "+ username+" has left the chat",key));
         System.out.println("A user has left the chat");
     }
 }

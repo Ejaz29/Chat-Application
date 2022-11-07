@@ -16,6 +16,7 @@ class Client extends JFrame {
     private BufferedWriter bufferedWriter;
     private String username;
     static Scanner sc = new Scanner(System.in);
+    private final String key ="%$&()*^$#&()VJJFKHT^&*T.GjhjfgjgJHG&^%";
     Client(Socket socket,String username){
         super(username);
         this.username=username;
@@ -46,7 +47,7 @@ class Client extends JFrame {
         jTextArea.setEditable(false);
         jScrollPane = new JScrollPane(jTextArea,JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         jScrollPane.setBounds(37,20,400,270);
-        jScrollPane.getVerticalScrollBar().addAdjustmentListener(e -> e.getAdjustable().setValue(e.getAdjustable().getMaximum()));
+        jScrollPane.getVerticalScrollBar().addAdjustmentListener(e -> jTextArea.select(jTextArea.getHeight(),0));
         jPanel.add(jButton);
         jPanel.add(jScrollPane);
         jButton.addActionListener(e -> sendMessage());
@@ -78,6 +79,7 @@ class Client extends JFrame {
             while(socket.isConnected()){
                 try {
                     String msg=bufferedReader.readLine();
+                    msg = decrypt(msg);
                     jTextArea.append(msg);
                     jTextArea.append("\n");
                 } catch (Exception e) {
@@ -93,7 +95,8 @@ class Client extends JFrame {
             return;
         }
         try{
-            bufferedWriter.write(username + ": " + msgtosend);
+            msgtosend = encrypt(username + ": " + msgtosend);
+            bufferedWriter.write(msgtosend);
             bufferedWriter.newLine();
             bufferedWriter.flush();
         }
@@ -136,4 +139,13 @@ class Client extends JFrame {
 
         });
     }
+
+    public String encrypt(String strToEncrypt){
+        return AES.encrypt(strToEncrypt,key);
+    }
+
+    public String decrypt(String strToDecrypt){
+        return AES.decrypt(strToDecrypt,key);
+    }
+
 }
